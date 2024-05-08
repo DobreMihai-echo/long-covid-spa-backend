@@ -6,4 +6,4 @@ FROM openjdk:17.0.1-jdk-slim
 COPY --from=build /target/backend-0.0.1-SNAPSHOT.jar backend.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","backend.jar"]
+ENTRYPOINT ["java","-Dspring.profiles.active=production","-jar","backend.jar"]
