@@ -72,6 +72,8 @@ public class AuthenticationController {
             return ResponseEntity.ok().body(new UserInfoResponse(userDetails.getId(),
                             userDetails.getUsername(),
                             userDetails.getEmail(),
+                                                userDetails.getFirstName(),
+                    userDetails.getLastName(),
                                                 roles,
                             token));
         } catch (Exception ex) {

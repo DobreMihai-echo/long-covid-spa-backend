@@ -2,7 +2,6 @@ package com.longcovidspa.backend.controler;
 
 
 import com.longcovidspa.backend.model.HealthData;
-import com.longcovidspa.backend.model.HeartRateDTO;
 import com.longcovidspa.backend.services.HealthDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/health")
