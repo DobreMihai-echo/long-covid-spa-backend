@@ -7,6 +7,7 @@ import com.longcovidspa.backend.repositories.HealthDataRepository;
 import com.longcovidspa.backend.repositories.UserRepositories;
 import com.longcovidspa.backend.services.HealthDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
@@ -24,12 +25,12 @@ public class HealthDataServiceImpl implements HealthDataService {
     UserRepositories userRepositories;
 
     @Override
-    public List<HealthData> saveHealthDataForUser(String username, HealthData healthData) {
-        User healthDataUser = userRepositories.findByUsername(username).get();
-        if (healthDataUser!= null) {
-            healthData.setUser(healthDataUser);
+    @Async
+    public void saveHealthDataForUser(String username, HealthData healthData) {
+        Optional<User> healthDataUser = userRepositories.findByUsername(username);
+        if (healthDataUser.isPresent()) {
+            healthData.setUser(healthDataUser.get());
             repository.save(healthData);
-            return repository.findAll();
         } else {
             throw new RuntimeException("There is no username");
         }

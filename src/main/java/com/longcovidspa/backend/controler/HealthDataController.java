@@ -24,7 +24,8 @@ public class HealthDataController {
     private ResponseEntity<?> saveHealthData(@RequestParam(name = "username") String username, @RequestBody HealthData healthData) {
         System.out.println("CONTROLLER");
         try {
-            return ResponseEntity.ok(service.saveHealthDataForUser(username, healthData));
+            service.saveHealthDataForUser(username, healthData);
+            return ResponseEntity.ok("Successfully updated");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("There was a problem saving the data" + e.getMessage());
         }
