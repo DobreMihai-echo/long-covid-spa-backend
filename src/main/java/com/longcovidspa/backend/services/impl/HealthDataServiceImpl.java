@@ -6,6 +6,7 @@ import com.longcovidspa.backend.model.User;
 import com.longcovidspa.backend.repositories.HealthDataRepository;
 import com.longcovidspa.backend.repositories.UserRepositories;
 import com.longcovidspa.backend.services.HealthDataService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class HealthDataServiceImpl implements HealthDataService {
 
     @Override
     @Async
+    @Transactional
     public void saveHealthDataForUser(String username, HealthData healthData) {
         Optional<User> healthDataUser = userRepositories.findByUsername(username);
         if (healthDataUser.isPresent()) {
