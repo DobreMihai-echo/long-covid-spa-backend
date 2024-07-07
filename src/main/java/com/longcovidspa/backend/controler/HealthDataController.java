@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/health")
@@ -19,10 +20,12 @@ public class HealthDataController {
 
 
     @PostMapping
-    private ResponseEntity<?> saveHealthData(@RequestParam(name = "username") String username, @RequestBody HealthData healthData) {
-        System.out.println("CONTROLLER");
+    private ResponseEntity<?> saveHealthData(@RequestParam(name = "username") String username, @RequestBody List<HealthData> healthDataList) {
         try {
-            service.saveHealthDataForUser(username, healthData);
+            for (HealthData healthData: healthDataList) {
+                System.out.println("Username:" + username + "HEALTH:" + healthData);
+                service.saveHealthDataForUser(username, healthData);
+            }
             return ResponseEntity.ok("Successfully updated");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("There was a problem saving the data" + e.getMessage());
