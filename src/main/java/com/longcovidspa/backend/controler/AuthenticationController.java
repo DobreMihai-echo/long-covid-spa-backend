@@ -6,6 +6,7 @@ import com.longcovidspa.backend.model.Role;
 import com.longcovidspa.backend.model.User;
 import com.longcovidspa.backend.payload.request.Login;
 import com.longcovidspa.backend.payload.request.Register;
+import com.longcovidspa.backend.payload.response.ApiResponse;
 import com.longcovidspa.backend.payload.response.UserInfoResponse;
 import com.longcovidspa.backend.repositories.RoleRepository;
 import com.longcovidspa.backend.repositories.UserRepositories;
@@ -13,6 +14,7 @@ import com.longcovidspa.backend.security.UserDetailsImpl;
 import com.longcovidspa.backend.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -85,11 +87,11 @@ public class AuthenticationController {
     public ResponseEntity<?> registerUser(@RequestBody Register signUpRequest) {
         System.out.println("UUS:" + signUpRequest);
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+            return ResponseEntity.badRequest().body("Username is already taken!");
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+            return ResponseEntity.badRequest().body("Email is already in use!");
         }
 
         // Create new user's account
@@ -114,6 +116,6 @@ public class AuthenticationController {
         user.setRoles(roles);
         userRepository.save(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new ApiResponse("User registered successfully!"));
     }
 }
