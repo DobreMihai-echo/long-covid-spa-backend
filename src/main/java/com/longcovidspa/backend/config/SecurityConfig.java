@@ -68,10 +68,10 @@ public class SecurityConfig{
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource())) // Enable CORS
+        return http.cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers("/api/auth/**").permitAll()
+                    request.requestMatchers("/api/auth/**", "/api/health", "/").permitAll()
                             .anyRequest().authenticated();
                 }).build();
     }
@@ -83,6 +83,8 @@ public class SecurityConfig{
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Methods
         configuration.setAllowCredentials(true); // Optional
         configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type")); // Optional: expose specific headers
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
