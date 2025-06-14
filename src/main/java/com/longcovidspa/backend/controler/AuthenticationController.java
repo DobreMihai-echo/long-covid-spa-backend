@@ -85,13 +85,14 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody Register signUpRequest) {
-        System.out.println("UUS:" + signUpRequest);
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Username is already taken!");
+            return ResponseEntity.badRequest()
+                    .body("Error: Username is already taken!");
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body("Email is already in use!");
+            return ResponseEntity.badRequest()
+                    .body("Error: Email is already in use!");
         }
 
         // Create new user's account
@@ -106,9 +107,17 @@ public class AuthenticationController {
                 encoder.encode(signUpRequest.getPassword()));
 
         Set<Role> roles = new HashSet<>();
+
+        // Ensure ROLE_USER exists
         if (!roleRepository.existsByName(ERole.ROLE_USER)) {
             roleRepository.save(new Role(ERole.ROLE_USER));
         }
+
+        // Ensure ROLE_MEDIC exists
+        if (!roleRepository.existsByName(ERole.ROLE_MEDIC)) {
+            roleRepository.save(new Role(ERole.ROLE_MEDIC));
+        }
+
         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         roles.add(userRole);

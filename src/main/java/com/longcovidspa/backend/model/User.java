@@ -58,6 +58,17 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<HealthData> healthData;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "doctor_patients",
+        joinColumns = @JoinColumn(name = "doctor_id"),
+        inverseJoinColumns = @JoinColumn(name = "patient_id")
+    )
+    private Set<User> assignedPatients = new HashSet<>();
+
+    @ManyToMany(mappedBy = "assignedPatients", fetch = FetchType.LAZY)
+    private Set<User> doctors = new HashSet<>();
+
     public User( String username, String email, String password) {
         this.username = username;
         this.password = password;
