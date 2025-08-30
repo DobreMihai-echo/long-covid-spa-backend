@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import java.security.Timestamp;
 import java.util.Date;
@@ -27,4 +29,8 @@ public interface HealthDataRepository extends JpaRepository<HealthData,Long> {
             "FROM HealthData hd WHERE hd.receivedDate BETWEEN :startDate AND :endDate " +
             "GROUP BY to_char(hd.receivedDate, 'YYYY-MM')")
     List<HeartRateDTO> findMonthlyAverage(@Param("startDate") Timestamp startDate, @Param("endDate") Timestamp endDate);
+
+    @Query("SELECT MAX(h.receivedDate) FROM HealthData h WHERE h.user.id = :patientId")
+    Optional<LocalDateTime> findLatestSyncDateByPatientId(@Param("patientId") Long patientId);
+
 }

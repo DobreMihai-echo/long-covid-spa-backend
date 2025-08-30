@@ -1,5 +1,6 @@
 package com.longcovidspa.backend.services;
 
+import com.longcovidspa.backend.dto.PatientDashboardDTO;
 import com.longcovidspa.backend.exception.DoctorPatientAccessException;
 import com.longcovidspa.backend.model.DoctorNote;
 import com.longcovidspa.backend.model.User;
@@ -8,6 +9,7 @@ import com.longcovidspa.backend.payload.response.DoctorNoteResponse;
 import com.longcovidspa.backend.payload.response.PatientDTO;
 import com.longcovidspa.backend.repositories.DoctorNoteRepository;
 import com.longcovidspa.backend.repositories.UserRepositories;
+import com.longcovidspa.backend.repositories.HealthDataRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -15,9 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,7 @@ public class DoctorService {
     
     private final UserRepositories userRepository;
     private final DoctorNoteRepository doctorNoteRepository;
+    private final HealthDataRepository healthDataRepository;
     
     @PersistenceContext
     private EntityManager entityManager;
@@ -152,5 +156,66 @@ public class DoctorService {
                         .doctor(note.getDoctor().getEmail())
                         .build())
                 .collect(Collectors.toList());
+    }
+    
+    @Transactional(readOnly = true)
+    public List<PatientDashboardDTO> getPatientsForDashboard(String doctorUsername) {
+        User doctor = userRepository.findByUsername(doctorUsername)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        // Use existing query to get assigned patients
+        String sql = "SELECT p.* FROM authentication p " +
+                     "JOIN doctor_patients dp ON p.id = dp.patient_id " +
+                     "WHERE dp.doctor_id = :doctorId";
+        
+        Query query = entityManager.createNativeQuery(sql, User.class);
+        query.setParameter("doctorId", doctor.getId());
+        
+        @SuppressWarnings("unchecked")
+        List<User> patients = query.getResultList();
+        
+        return patients.stream()
+                .map(this::convertToPatientDashboardDTO)
+                .collect(Collectors.toList());
+    }
+    
+    private PatientDashboardDTO convertToPatientDashboardDTO(User patient) {
+        PatientDashboardDTO dto = new PatientDashboardDTO();
+        dto.setId(patient.getId());
+        dto.setCode("P" + String.format("%04d", patient.getId())); // Generate patient code
+        dto.setFullName(patient.getFirstName() + " " + patient.getLastName());
+        
+        // Calculate age from date of birth
+        if (patient.getDateOfBirth() != null) {
+            LocalDate birthDate = patient.getDateOfBirth().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            dto.setAge(Period.between(birthDate, LocalDate.now()).getYears());
+        }
+        
+        // Get last sync from health data using the existing repository method
+        Optional<LocalDateTime> lastSync = healthDataRepository.findLatestSyncDateByPatientId(patient.getId());
+        dto.setLastSync(lastSync.orElse(null));
+        
+        // Set status based on last sync
+        if (lastSync.isPresent()) {
+            long hoursSinceSync = Duration.between(lastSync.get(), LocalDateTime.now()).toHours();
+            if (hoursSinceSync < 24) {
+                dto.setStatus("Active");
+            } else if (hoursSinceSync < 72) {
+                dto.setStatus("Warning");
+            } else {
+                dto.setStatus("Inactive");
+            }
+        } else {
+            dto.setStatus("No Data");
+        }
+        
+         
+        // default values for alerts and risk level
+        
+        dto.setActiveAlerts(0);
+        dto.setLastAlert("None");
+        dto.setRiskLevel("Low");
+        
+        return dto;
     }
 }

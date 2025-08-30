@@ -7,6 +7,7 @@ import com.longcovidspa.backend.payload.response.PatientDTO;
 import com.longcovidspa.backend.payload.response.UserInfoDTO;
 import com.longcovidspa.backend.repositories.UserRepositories;
 import com.longcovidspa.backend.services.DoctorService;
+import com.longcovidspa.backend.dto.PatientDashboardDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -96,5 +97,13 @@ public class DoctorController {
         String doctorUsername = authentication.getName();
         List<DoctorNoteResponse> notes = doctorService.getPatientNotes(doctorUsername, patientId);
         return ResponseEntity.ok(notes);
+    }
+    
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('ROLE_MEDIC')")
+    public ResponseEntity<List<PatientDashboardDTO>> getDashboardPatients(Authentication authentication) {
+        String doctorUsername = authentication.getName();
+        List<PatientDashboardDTO> patients = doctorService.getPatientsForDashboard(doctorUsername);
+        return ResponseEntity.ok(patients);
     }
 }
