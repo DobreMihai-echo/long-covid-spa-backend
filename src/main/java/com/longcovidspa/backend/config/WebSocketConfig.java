@@ -1,23 +1,33 @@
 package com.longcovidspa.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
-        config.setApplicationDestinationPrefixes("/app");
-    }
+    @Value("${app.ws.allowed-origins}")
+    private String wsOrigins;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        String[] patterns = Arrays.stream(wsOrigins.split(",")).map(String::trim).toArray(String[]::new);
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns(patterns)   // FRONTEND origins only
+                .withSockJS();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry r) {
+        r.enableSimpleBroker("/queue");     // ok for single instance
+        r.setUserDestinationPrefix("/user");
+        r.setApplicationDestinationPrefixes("/app");
     }
 }

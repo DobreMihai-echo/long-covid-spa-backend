@@ -6,10 +6,12 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface HealthDataService {
 
-    @Async
-    void saveHealthDataForUser(String username, HealthData healthData);
+    HealthData saveHealthDataForUser(String username, HealthData healthData);
     List<HeartRateDTO> getHeartRateData(String granularity, Date start, Date end);
+
+    Optional<HealthData> findLatest(String username);
 }

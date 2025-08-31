@@ -26,16 +26,19 @@ public class HealthDataServiceImpl implements HealthDataService {
     UserRepositories userRepositories;
 
     @Override
-    @Async
     @Transactional
-    public void saveHealthDataForUser(String username, HealthData healthData) {
+    public HealthData saveHealthDataForUser(String username, HealthData healthData) {
         Optional<User> healthDataUser = userRepositories.findByUsername(username);
         if (healthDataUser.isPresent()) {
             healthData.setUser(healthDataUser.get());
-            repository.save(healthData);
+            return repository.save(healthData);
         } else {
             throw new RuntimeException("There is no username");
         }
+    }
+
+    public Optional<HealthData> findLatest(String username) {
+        return repository.findLatest(username);
     }
 
     public List<HeartRateDTO> getHeartRateData(String granularity, Date start, Date end) {
