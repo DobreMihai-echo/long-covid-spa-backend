@@ -1,6 +1,5 @@
 package com.longcovidspa.backend.model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +16,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Enumerated(EnumType.STRING)  // Make sure this is EnumType.STRING
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ERole name;
 
@@ -25,4 +24,3 @@ public class Role {
         this.name = roleName;
     }
 }
-

@@ -6,6 +6,7 @@ import com.longcovidspa.backend.services.HealthDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -18,18 +19,29 @@ public class HealthDataController {
     @Autowired
     private HealthDataService service;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    private ResponseEntity<?> saveHealthData(@RequestParam(name = "username") String username, @RequestBody List<HealthData> healthDataList) {
+    private ResponseEntity<?> saveHealthData(@RequestParam String username,
+                                             @RequestBody List<HealthData> healthDataList) {
         try {
-            for (HealthData healthData: healthDataList) {
-                System.out.println("Username:" + username + "HEALTH:" + healthData);
-                service.saveHealthDataForUser(username, healthData);
+            HealthData lastSaved = null;
+            for (HealthData hd: healthDataList) {
+                lastSaved = service.saveHealthDataForUser(username, hd);
+            }
+            if (lastSaved != null) {
+                messagingTemplate.convertAndSend("/queue/healthdata/" + username, lastSaved);
             }
             return ResponseEntity.ok("Successfully updated");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("There was a problem saving the data" + e.getMessage());
+            return ResponseEntity.internalServerError().body("There was a problem saving the data " + e.getMessage());
         }
+    }
+
+    @GetMapping("/{username}/latest")
+    public ResponseEntity<HealthData> latest(@PathVariable String username) {
+        return ResponseEntity.of(service.findLatest(username));
     }
 
     @GetMapping("/heart-rate")

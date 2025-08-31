@@ -33,4 +33,17 @@ public interface HealthDataRepository extends JpaRepository<HealthData,Long> {
     @Query("SELECT MAX(h.receivedDate) FROM HealthData h WHERE h.user.id = :patientId")
     Optional<LocalDateTime> findLatestSyncDateByPatientId(@Param("patientId") Long patientId);
 
+    @Query("""
+    select h from HealthData h
+    where h.user.username = :username
+    order by h.receivedDate desc
+  """)
+    List<HealthData> findLatestRow(@Param("username") String username,
+                                   org.springframework.data.domain.Pageable pr);
+
+    default Optional<HealthData> findLatest(String username) {
+        var page = org.springframework.data.domain.PageRequest.of(0,1);
+        var list = findLatestRow(username, page);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
 }
