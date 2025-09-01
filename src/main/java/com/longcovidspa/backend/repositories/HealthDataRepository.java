@@ -6,10 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import java.security.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -46,4 +47,16 @@ public interface HealthDataRepository extends JpaRepository<HealthData,Long> {
         var list = findLatestRow(username, page);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
+
+    // repositories/HealthDataRepository.java
+    @Query("SELECT h FROM HealthData h " +
+            "WHERE h.user.username = :username " +
+            "AND h.receivedDate BETWEEN :start AND :end " +
+            "ORDER BY h.receivedDate ASC")
+    List<HealthData> findWindow(@Param("username") String username,
+                                @Param("start") java.sql.Timestamp start,
+                                @Param("end")   java.sql.Timestamp end);
+    List<HealthData> findByUser_UsernameAndReceivedDateBetweenOrderByReceivedDate(
+            String username, Timestamp start, Timestamp end
+    );
 }
