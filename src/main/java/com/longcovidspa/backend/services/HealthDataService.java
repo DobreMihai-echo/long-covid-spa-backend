@@ -5,6 +5,7 @@ import com.longcovidspa.backend.model.HealthData;
 import com.longcovidspa.backend.model.HeartRateDTO;
 import org.springframework.scheduling.annotation.Async;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -18,4 +19,9 @@ public interface HealthDataService {
     Optional<HealthData> findLatest(String username);
 
     TrendResponse getTrends(String username, String metric, Instant start, Instant end, String granularity);
+    Optional<HealthData> findLatestByPatientId(Long patientId);
+
+    // ✅ NEW
+    List<HealthData> findRangeByPatientId(Long patientId, Timestamp start, Timestamp end);
+
 }
