@@ -30,16 +30,16 @@ public class MedicApplyController {
         return ResponseEntity.accepted().body(Map.of("status", app.getStatus()));
     }
 
-    @GetMapping("/my-status")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> myStatus(@AuthenticationPrincipal UserDetailsImpl current) {
-        return ResponseEntity.of(service.lastForUser(current.getId()));
-    }
-
-    @GetMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        service.verifyWorkEmail(token);
-        // Typically redirect to frontend "verified" page
-        return ResponseEntity.ok(Map.of("verified", true));
-    }
+//    @GetMapping("/my-status")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<?> myStatus(@AuthenticationPrincipal UserDetailsImpl current) {
+//        return ResponseEntity.of(service.lastForUser(current.getId()));
+//    }
+//
+//    @GetMapping("/verify-email")
+//    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+//        service.verifyWorkEmail(token);
+//        // Typically redirect to frontend "verified" page
+//        return ResponseEntity.ok(Map.of("verified", true));
+//    }
 }

@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface MedicApplicationRepo extends JpaRepository<MedicApplication, Long> {
@@ -15,5 +17,7 @@ public interface MedicApplicationRepo extends JpaRepository<MedicApplication, Lo
     Optional<MedicApplication> findByEmailToken(@Param("t") String token);
     List<MedicApplication> findByStatusOrderBySubmittedAtDesc(String status); // PENDING, APPROVED, REJECTED
     boolean existsByUserIdAndStatus(Long userId, String status); // prevent multiple PENDING apps
+
+    Page<MedicApplication> findByStatusOrderBySubmittedAtDesc(String status, Pageable pageable);
 
 }

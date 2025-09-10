@@ -8,6 +8,8 @@ import com.longcovidspa.backend.utils.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,17 @@ public class MedicVerificationServiceImpl implements MedicVerificationService {
         return false;
     }
 
+    @Override
+    public Page<MedicApplication> list(String status, Pageable pageable) {
+        String st = status == null ? "PENDING" : status.toUpperCase();
+        return appRepo.findByStatusOrderBySubmittedAtDesc(st, pageable);
+    }
+
+    @Override
+    public MedicApplication get(Long id) {
+        return appRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Application not found"));
+    }
+
     @Transactional
     @Override
     public MedicApplication submit(Long userId, String licenseNo, String issuer, String workEmail, List<String> docUrls) {
@@ -66,7 +79,7 @@ public class MedicVerificationServiceImpl implements MedicVerificationService {
         email.sendWorkEmailVerification(emailNorm, token);
 
         // Notify admins (email + optional WS)
-        String link = frontendBase + "/admin/medics/" + app.getId();
+        String link = frontendBase + "/admin/medics";
         email.notifyAdminsNewApplication(
                 "New medic application pending",
                 """

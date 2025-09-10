@@ -1,18 +1,24 @@
 package com.longcovidspa.backend.controler;
 
 import com.longcovidspa.backend.model.User;
+import com.longcovidspa.backend.model.UserLite;
 import com.longcovidspa.backend.payload.request.DoctorNoteRequest;
 import com.longcovidspa.backend.payload.response.DoctorNoteResponse;
 import com.longcovidspa.backend.payload.response.PatientDTO;
 import com.longcovidspa.backend.payload.response.UserInfoDTO;
 import com.longcovidspa.backend.repositories.UserRepositories;
+import com.longcovidspa.backend.security.UserDetailsImpl;
 import com.longcovidspa.backend.services.DoctorService;
 import com.longcovidspa.backend.dto.PatientDashboardDTO;
+import com.longcovidspa.backend.services.impl.PatientsAssignmentServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,13 +33,17 @@ public class DoctorController {
     private final DoctorService doctorService;
     private final UserRepositories userRepository;
 
-    @GetMapping("/patients")
-    @PreAuthorize("hasRole('ROLE_MEDIC')")
-    public ResponseEntity<List<PatientDTO>> getAssignedPatients(Authentication authentication) {
-        String doctorUsername = authentication.getName();
-        List<PatientDTO> patients = doctorService.getAssignedPatients(doctorUsername);
-        return ResponseEntity.ok(patients);
+    private final PatientsAssignmentServiceImpl patientService;
+
+    @GetMapping("/me/patients")
+    @PreAuthorize("hasAnyRole('ADMIN','MEDIC')")
+    public ResponseEntity<Page<UserLite>> myPatients(
+            @AuthenticationPrincipal UserDetailsImpl me,
+            @RequestParam(defaultValue="0") int page,
+            @RequestParam(defaultValue="20") int size) {
+        return ResponseEntity.ok(patientService.listPatientsOfDoctor(me.getId(), PageRequest.of(page, size)));
     }
+
 
     @PostMapping("/assign")
     @PreAuthorize("hasRole('ROLE_MEDIC')")

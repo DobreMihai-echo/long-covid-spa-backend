@@ -1,9 +1,8 @@
 package com.longcovidspa.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,68 +13,65 @@ import java.util.*;
 
 @Entity
 @Table(name = "authentication")
-@Data
+@Getter @Setter
 @SuperBuilder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
+    @ToString.Include
     @Column(name = "email")
     private String email;
-    @Column
+
+    @ToString.Include
     private String username;
 
-    @Column
+    private String firstName;
+    private String lastName;
     private String password;
-
-    @Column
     private String gender;
-
-    @Column
     private Date dateOfBirth;
-
-    @Column
     private Integer height;
-
-    @Column
     private Integer weight;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HealthData> healthData;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "doctor_patients",
-        joinColumns = @JoinColumn(name = "doctor_id"),
-        inverseJoinColumns = @JoinColumn(name = "patient_id")
+            name = "doctor_patients",
+            joinColumns = @JoinColumn(name = "doctor_id"),
+            inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
     private Set<User> assignedPatients = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "assignedPatients", fetch = FetchType.LAZY)
     private Set<User> doctors = new HashSet<>();
 
-    public User( String username, String email, String password) {
+    public User(String username, String email, String password) {
         this.username = username;
         this.password = password;
-        this.email=email;
+        this.email = email;
     }
 
-    public User(String username, String email, String firstName, String lastName, String gender, Date dateOfBirth, Integer height, Integer weight, String password) {
+    public User(String username, String email, String firstName, String lastName,
+                String gender, Date dateOfBirth, Integer height, Integer weight, String password) {
         this.username = username;
         this.email = email;
         this.firstName = firstName;
@@ -87,4 +83,5 @@ public class User {
         this.password = password;
     }
 }
+
 
