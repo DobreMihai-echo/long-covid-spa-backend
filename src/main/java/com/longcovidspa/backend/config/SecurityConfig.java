@@ -92,6 +92,8 @@ public class SecurityConfig {
         var cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(Arrays.stream(originsCsv.split(",")).map(String::trim).toList());
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Content-Disposition"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type"));
         cfg.setAllowCredentials(true);
 

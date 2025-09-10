@@ -48,6 +48,34 @@ public interface HealthDataRepository extends JpaRepository<HealthData,Long> {
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 
+    Optional<HealthData> findTopByUser_IdOrderByReceivedDateDesc(Long patientId);
+
+    // ✅ RANGE (optionally bounded) by patientId, ascending time
+    @Query("""
+           select hd from HealthData hd
+           where hd.user.id = :patientId
+             and (:start is null or hd.receivedDate >= :start)
+             and (:end   is null or hd.receivedDate <= :end)
+           order by hd.receivedDate asc
+           """)
+    List<HealthData> findByPatientAndRange(@Param("patientId") Long patientId,
+                                           @Param("start") Timestamp start,
+                                           @Param("end")   Timestamp end);
+
+    // (Optional) examples if you need per-patient daily averages later
+    @Query("""
+           select to_char(hd.receivedDate, 'YYYY-MM-DD') as period,
+                  avg(hd.heartRateVariability) as avgHrv
+           from HealthData hd
+           where hd.user.id = :patientId
+             and hd.receivedDate between :start and :end
+           group by to_char(hd.receivedDate, 'YYYY-MM-DD')
+           order by period
+           """)
+    List<Object[]> findDailyHrvAvgByPatient(@Param("patientId") Long patientId,
+                                            @Param("start") Timestamp start,
+                                            @Param("end")   Timestamp end);
+
     // repositories/HealthDataRepository.java
     @Query("SELECT h FROM HealthData h " +
             "WHERE h.user.username = :username " +

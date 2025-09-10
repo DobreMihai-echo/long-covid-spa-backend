@@ -85,46 +85,52 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody Register signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest()
-                    .body("Error: Username is already taken!");
+        try {
+            if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+                return ResponseEntity.badRequest()
+                        .body("Error: Username is already taken!");
+            }
+
+            if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+                return ResponseEntity.badRequest()
+                        .body("Error: Email is already in use!");
+            }
+
+            // Create new user's account
+            User user = new User(signUpRequest.getUsername(),
+                    signUpRequest.getEmail(),
+                    signUpRequest.getFirstName(),
+                    signUpRequest.getLastName(),
+                    signUpRequest.getGender(),
+                    signUpRequest.getDateOfBirth(),
+                    signUpRequest.getHeight(),
+                    signUpRequest.getWeight(),
+                    encoder.encode(signUpRequest.getPassword()));
+
+            Set<Role> roles = new HashSet<>();
+
+            // Ensure ROLE_USER exists
+            if (!roleRepository.existsByName(ERole.ROLE_USER)) {
+                roleRepository.save(new Role(ERole.ROLE_USER));
+            }
+
+            // Ensure ROLE_MEDIC exists
+            if (!roleRepository.existsByName(ERole.ROLE_MEDIC)) {
+                roleRepository.save(new Role(ERole.ROLE_MEDIC));
+            }
+
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+
+            user.setRoles(roles);
+            userRepository.save(user);
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new ApiResponse("User registered successfully!"));
+        } catch (Exception ex) {
+            System.out.println("EXP:" + ex.getMessage());
+            ex.printStackTrace();
         }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest()
-                    .body("Error: Email is already in use!");
-        }
-
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                signUpRequest.getFirstName(),
-                signUpRequest.getLastName(),
-                signUpRequest.getGender(),
-                signUpRequest.getDateOfBirth(),
-                signUpRequest.getHeight(),
-                signUpRequest.getWeight(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        Set<Role> roles = new HashSet<>();
-
-        // Ensure ROLE_USER exists
-        if (!roleRepository.existsByName(ERole.ROLE_USER)) {
-            roleRepository.save(new Role(ERole.ROLE_USER));
-        }
-
-        // Ensure ROLE_MEDIC exists
-        if (!roleRepository.existsByName(ERole.ROLE_MEDIC)) {
-            roleRepository.save(new Role(ERole.ROLE_MEDIC));
-        }
-
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        roles.add(userRole);
-
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new ApiResponse("User registered successfully!"));
+        return null;
     }
 }

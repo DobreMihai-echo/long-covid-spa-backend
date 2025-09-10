@@ -101,6 +101,15 @@ public class HealthDataServiceImpl implements HealthDataService {
         return dto;
     }
 
+    public Optional<HealthData> findLatestByPatientId(Long patientId) {
+        return repository.findTopByUser_IdOrderByReceivedDateDesc(patientId);
+    }
+
+
+    public List<HealthData> findRangeByPatientId(Long patientId, Timestamp start, Timestamp end) {
+        return repository.findByPatientAndRange(patientId, start, end);
+    }
+
     private Double metricValue(String metric, HealthData h) {
         switch (metric.toLowerCase(Locale.ROOT)) {
             case "spo2":  return toD(h.getSpo2());
@@ -116,6 +125,7 @@ public class HealthDataServiceImpl implements HealthDataService {
     public Optional<HealthData> findLatest(String username) {
         return repository.findLatest(username);
     }
+
 
     public List<HeartRateDTO> getHeartRateData(String granularity, Date start, Date end) {
         List<HeartRateDTO> heartRates = new ArrayList<>();
